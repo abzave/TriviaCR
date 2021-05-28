@@ -6,21 +6,41 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 int main(){
     int server_sockfd, client_sockfd;
     int server_len, client_len;
+    int result;
+    
+    char text[100];
+    char logName[100];
+    char log[1024];
+    char intConversion[100];
+
+    time_t now = time(NULL);
+
     struct sockaddr_in server_address;
     struct sockaddr_in client_address;
-    int result;
+    struct tm *t = localtime(&now);
+
     fd_set readfds, testfds;
+    FILE* currentLog;
 
     server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_address.sin_port = htons(3102);
     server_len = sizeof(server_address);
+    
+    strftime(text, sizeof(text) - 1, "%Y-%m-%d-%H-%M", t);
+
+    strcpy(logName, "logs/");
+    strcat(logName, text);
+    strcat(logName, "_log.txt");
 
     bind(server_sockfd, (struct sockaddr *)&server_address, server_len);
     listen(server_sockfd, 5);
@@ -35,11 +55,36 @@ int main(){
 
         testfds = readfds;
 
-        printf("server waiting\n");
+        now = time(NULL);
+        t = localtime(&now);
+        strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+
+        strcpy(log, "[");
+        strcat(log, text);
+        strcat(log, "] server running\n");
+
+        currentLog = fopen(logName, "a+");
+        fputs(log, currentLog);
+        fclose(currentLog);
+
         result = select(FD_SETSIZE, &testfds, (fd_set *)0, (fd_set *)0, (struct timeval *) 0);
 
         if(result < 1) {
-            perror("server error");
+            now = time(NULL);
+            t = localtime(&now);
+            strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+            sprintf(intConversion,"%d",result);
+
+            strcpy(log, "[");
+            strcat(log, text);
+            strcat(log, "] server failed with code: ");
+            strcat(log, intConversion);
+            strcat(log, "\n");
+            
+            currentLog = fopen(logName, "a+");
+            fputs(log, currentLog);
+            fclose(currentLog);
+
             exit(1);
         }
         
@@ -50,18 +95,61 @@ int main(){
                     client_sockfd = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len);
 
                     FD_SET(client_sockfd, &readfds);
-                    printf("adding client on fd %d\n", client_sockfd);
+
+                    now = time(NULL);
+                    t = localtime(&now);
+                    strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+                    sprintf(intConversion,"%d",client_sockfd);
+
+                    strcpy(log, "[");
+                    strcat(log, text);
+                    strcat(log, "] adding client on fd: ");
+                    strcat(log, intConversion);
+                    strcat(log, "\n");
+                    
+                    currentLog = fopen(logName, "a+");
+                    fputs(log, currentLog);
+                    fclose(currentLog);
                 } else {
                     ioctl(fd, FIONREAD, &nread);
 
                     if(nread == 0) {
                         close(fd);
                         FD_CLR(fd, &readfds);
-                        printf("removing client on fd %d\n", fd);
+
+                        now = time(NULL);
+                        t = localtime(&now);
+                        strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+                        sprintf(intConversion,"%d",fd);
+
+                        strcpy(log, "[");
+                        strcat(log, text);
+                        strcat(log, "] removing client on fd: ");
+                        strcat(log, intConversion);
+                        strcat(log, "\n");
+                        
+                        currentLog = fopen(logName, "a+");
+                        fputs(log, currentLog);
+                        fclose(currentLog);
                     } else {
                         read(fd, &ch, 1);
                         sleep(5);
-                        printf("serving client on fd %d\n", fd);
+
+                        now = time(NULL);
+                        t = localtime(&now);
+                        strftime(text, sizeof(text) - 1, "%Y-%m-%d %H:%M", t);
+                        sprintf(intConversion,"%d",fd);
+
+                        strcpy(log, "[");
+                        strcat(log, text);
+                        strcat(log, "] serving client on fd: ");
+                        strcat(log, intConversion);
+                        strcat(log, "\n");
+                        
+                        currentLog = fopen(logName, "a+");
+                        fputs(log, currentLog);
+                        fclose(currentLog);
+
                         ch++;
                         write(fd, &ch, 1);
                     }
