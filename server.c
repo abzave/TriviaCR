@@ -186,6 +186,8 @@ void serverStatisticsMenu() {
 
     bool exitMenu = false;
     int option = 0;
+    FILE *serverGlobalStats;
+    serverGlobalStats = fopen("globalStats.txt", "r");
 
     while (!exitMenu) {
         option = showMenu(options, 6);
