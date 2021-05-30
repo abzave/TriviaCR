@@ -1,3 +1,11 @@
+/*
+ * TEC, Cartago, Escuela de Ingeniería en Computación, Principios de Sistemas Operativos
+ * Proyecto: TriviaCR
+ * Abraham Meza Vega, 2018168174
+ * Lindsay Morales Bonilla, 2018077301
+ * 05/06/2021, I Semestre 2021, Prof. Esteban Arias Méndez
+*/
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
@@ -9,6 +17,7 @@
 #include <time.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include "CLI/interface.h"
 
 int main(){
     int server_sockfd, client_sockfd;
