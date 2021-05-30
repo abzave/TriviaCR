@@ -19,6 +19,13 @@
 #include <string.h>
 #include "CLI/interface.h"
 
+#define TRANSMITTED_BYTES       1
+#define DIFFERENT_CONNECTIONS   2
+#define TRANSMITTED_FILES       3
+#define QUESTIONS_STATS         4
+#define RANKING                 5
+#define EXIT_MENU               6
+
 int main(){
     int server_sockfd, client_sockfd;
     int server_len, client_len;
@@ -163,6 +170,44 @@ int main(){
                         write(fd, &ch, 1);
                     }
                 }
+            }
+        }
+    }
+}
+
+void serverStatisticsMenu() {
+    char* options[6];
+    options[0] = "1. Cantidad de bytes transmitidos";
+    options[1] = "2. Cantidad de conexiones distintas realizadas";
+    options[2] = "3. Cantidad de archivos transmitidos";
+    options[3] = "4. Estadísticas de preguntas";
+    options[4] = "5. Ranking de jugadores";
+    options[5] = "6. Salir";
+
+    bool exitMenu = false;
+    int option = 0;
+
+    while (!exitMenu) {
+        option = showMenu(options, 6);
+        switch(option) {
+            case TRANSMITTED_BYTES: {
+                break;
+            }
+            case DIFFERENT_CONNECTIONS: {
+                break;
+            }
+            case TRANSMITTED_FILES: {
+                break;
+            }
+            case QUESTIONS_STATS: {
+                break;
+            }
+            case RANKING: {
+                break;
+            }
+            case EXIT_MENU: {
+                exitMenu = true;
+                break;
             }
         }
     }
