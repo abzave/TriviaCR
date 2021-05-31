@@ -26,6 +26,9 @@
 #define RANKING                 5
 #define EXIT_MENU               6
 
+int gatherStat(char *stat);
+void serverStatisticsMenu();
+
 int main(){
     int server_sockfd, client_sockfd;
     int server_len, client_len;
@@ -177,40 +180,69 @@ int main(){
 
 void serverStatisticsMenu() {
     char* options[6];
-    options[0] = "1. Cantidad de bytes transmitidos";
-    options[1] = "2. Cantidad de conexiones distintas realizadas";
-    options[2] = "3. Cantidad de archivos transmitidos";
-    options[3] = "4. Estadísticas de preguntas";
-    options[4] = "5. Ranking de jugadores";
-    options[5] = "6. Salir";
+    options[0] = "Cantidad de bytes transmitidos";
+    options[1] = "Cantidad de conexiones distintas realizadas";
+    options[2] = "Cantidad de archivos transmitidos";
+    options[3] = "Estadísticas de preguntas";
+    options[4] = "Ranking de jugadores";
+    options[5] = "Salir";
 
-    bool exitMenu = false;
+    int exitMenu = 0;
     int option = 0;
-    FILE *serverGlobalStats;
-    serverGlobalStats = fopen("globalStats.txt", "r");
 
     while (!exitMenu) {
         option = showMenu(options, 6);
         switch(option) {
             case TRANSMITTED_BYTES: {
+                int transmitedBytes = gatherStat("transmited_bytes");
+                printf("La cantidad de bytes transmitidos por el servidor han sido %d\n\n", transmitedBytes);
                 break;
             }
             case DIFFERENT_CONNECTIONS: {
+                int differentConnections = gatherStat("different_connections");
+                printf("La cantidad de conexiones distintas han sido %d\n\n", differentConnections);
                 break;
             }
             case TRANSMITTED_FILES: {
+                int transmitedFiles = gatherStat("transmited_files");
+                printf("La cantidad de archivos transmitidos por el servidor han sido %d\n\n", transmitedFiles);
                 break;
             }
             case QUESTIONS_STATS: {
+                int totalQuestions = gatherStat("played_questions");
+                int correctAnswers = gatherStat("correct_answers");
+                int incorrectAnswers = totalQuestions - correctAnswers;
+                printf("Cantidad de preguntas jugadas %d\n", totalQuestions);
+                printf("Cantidad de preguntas contestadas correctamente %d (%f %%)\n", correctAnswers, ((float)correctAnswers/(float)totalQuestions)*100);
+                printf("Cantidad de preguntas contestadas incorrectamente %d (%f %%)\n\n", incorrectAnswers, ((float)incorrectAnswers/(float)totalQuestions)*100);
                 break;
             }
             case RANKING: {
+                //open users.csv
                 break;
             }
             case EXIT_MENU: {
-                exitMenu = true;
+                exitMenu = 1;
                 break;
             }
         }
     }
+}
+
+int gatherStat(char *stat) {
+    FILE *serverStatsFile = fopen("globalStats.csv","r");
+    char line[256];
+
+    while(fgets(line, sizeof(line), serverStatsFile)) {
+        char *splittedLine;
+        splittedLine = strtok(line,",");
+        if (strcmp(splittedLine,stat) == 0) {
+            splittedLine = strtok(NULL, ",");
+            int statValue;
+            sscanf(splittedLine, "%d", &statValue);
+            return statValue;
+        }
+    }
+
+    return 0;
 }
