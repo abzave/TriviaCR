@@ -1,3 +1,11 @@
+/*
+ * TEC, Cartago, Escuela de Ingeniería en Computación, Principios de Sistemas Operativos
+ * Proyecto: TriviaCR
+ * Abraham Meza Vega, 2018168174
+ * Lindsay Morales Bonilla, 2018077301
+ * 05/06/2021, I Semestre 2021, Prof. Esteban Arias Méndez
+*/
+
 #include "logging.h"
 
 /**
@@ -37,6 +45,7 @@ void logText(char* log) {
     currentLog = fopen(logName, "a+");
     fputs(newEntry, currentLog);
     fclose(currentLog);
+    printf("%s", newEntry);
 }
 
 /**

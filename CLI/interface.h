@@ -6,24 +6,13 @@
  * 05/06/2021, I Semestre 2021, Prof. Esteban Arias Méndez
 */
 
-#ifndef LOGGING_H
-#define LOGGING_H
+#ifndef INTERFACE
+#define INTERFACE
 
-#include <time.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
-char buffer[100];
-char logName[100];
-char usersFile[100];
-
-time_t now;
-struct tm *t;
-FILE* currentLog;
-
-void prepareNewLog();
-void resetTime();
-void logText(char*);
-void logWithInt(char*, int);
+int showMenu(char**, int);
+int askOption(int);
 
 #endif

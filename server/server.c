@@ -1,3 +1,11 @@
+/*
+ * TEC, Cartago, Escuela de Ingeniería en Computación, Principios de Sistemas Operativos
+ * Proyecto: TriviaCR
+ * Abraham Meza Vega, 2018168174
+ * Lindsay Morales Bonilla, 2018077301
+ * 05/06/2021, I Semestre 2021, Prof. Esteban Arias Méndez
+*/
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,8 +18,17 @@
 #include "logging.h"
 #include "../users/userManager.h"
 
+#define TRANSMITTED_BYTES       1
+#define DIFFERENT_CONNECTIONS   2
+#define TRANSMITTED_FILES       3
+#define QUESTIONS_STATS         4
+#define RANKING                 5
+#define EXIT_MENU               6
+
 void handleCommand(char* command, int fd);
 void logUser();
+void serverStatisticsMenu();
+int gatherStat(char *stat);
 
 int main(){
     int server_sockfd, client_sockfd;
@@ -87,6 +104,8 @@ int main(){
 void handleCommand(char* command, int fd) {
     if (strcmp(command, "login") == 0) {
         logUser(fd);
+    } else if (strcmp(command, "login") == 0) {
+        serverStatisticsMenu();
     }
 }
 
@@ -106,4 +125,83 @@ void logUser(int fd) {
 
     int index = addUser(user);
     logWithInt("User added in position: %d", index);
+}
+
+void serverStatisticsMenu() {
+    logText("Acceso a estadisticas del servidor");
+
+    char* options[6];
+    options[0] = "Cantidad de bytes transmitidos";
+    options[1] = "Cantidad de conexiones distintas realizadas";
+    options[2] = "Cantidad de archivos transmitidos";
+    options[3] = "Estadísticas de preguntas";
+    options[4] = "Ranking de jugadores";
+    options[5] = "Salir";
+
+    int exitMenu = 0;
+    int option = 0;
+    FILE *serverGlobalStats;
+    serverGlobalStats = fopen("globalStats.txt", "r");
+
+    while (!exitMenu) {
+        option = showMenu(options, 6);
+        switch(option) {
+            case TRANSMITTED_BYTES: {
+                logText("Consulta para bytes transmitidos");
+                int transmitedBytes = gatherStat("transmited_bytes");
+                printf("La cantidad de bytes transmitidos por el servidor han sido %d\n\n", transmitedBytes);
+                break;
+            }
+            case DIFFERENT_CONNECTIONS: {
+                logText("Consulta para conexiones distintas");
+                int differentConnections = gatherStat("different_connections");
+                printf("La cantidad de conexiones distintas han sido %d\n\n", differentConnections);
+                break;
+            }
+            case TRANSMITTED_FILES: {
+                logText("Consulta para archivos transmitidos");
+                int transmitedFiles = gatherStat("transmited_files");
+                printf("La cantidad de archivos transmitidos por el servidor han sido %d\n\n", transmitedFiles);
+                break;
+            }
+            case QUESTIONS_STATS: {
+                logText("Consulta para estadisticas de preguntas");
+                int totalQuestions = gatherStat("played_questions");
+                int correctAnswers = gatherStat("correct_answers");
+                int incorrectAnswers = totalQuestions - correctAnswers;
+                printf("Cantidad de preguntas jugadas %d\n", totalQuestions);
+                printf("Cantidad de preguntas contestadas correctamente %d (%f %%)\n", correctAnswers, ((float)correctAnswers/(float)totalQuestions)*100);
+                printf("Cantidad de preguntas contestadas incorrectamente %d (%f %%)\n\n", incorrectAnswers, ((float)incorrectAnswers/(float)totalQuestions)*100);
+                break;
+            }
+            case RANKING: {
+                logText("Consulta para ranking");
+                //open users.csv
+                break;
+            }
+            case EXIT_MENU: {
+                logText("Menu de estadisticas cerrado");
+                exitMenu = 1;
+                break;
+            }
+        }
+    }
+}
+
+int gatherStat(char *stat) {
+    FILE *serverStatsFile = fopen("globalStats.csv","r");
+    char line[256];
+
+    while(fgets(line, sizeof(line), serverStatsFile)) {
+        char *splittedLine;
+        splittedLine = strtok(line,",");
+        if (strcmp(splittedLine,stat) == 0) {
+            splittedLine = strtok(NULL, ",");
+            int statValue;
+            sscanf(splittedLine, "%d", &statValue);
+            return statValue;
+        }
+    }
+
+    return 0;
 }
